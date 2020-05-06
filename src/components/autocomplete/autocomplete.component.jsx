@@ -1,8 +1,13 @@
 import React, { Component, Fragment } from "react";
 import PropTypes from "prop-types";
+import { createStructuredSelector } from 'reselect';
 
 import { CountryList } from '../country-list/country-list.component';
 import './autocomplete.styles.scss';
+
+import { connect } from 'react-redux';
+import { updateCountryStart } from '../../redux/country/country.actions';
+import { selectCountry, selectCountryArray, selectRegion } from '../../redux/country/country.selectors';
 
 class Autocomplete extends Component {
   static propTypes = {
@@ -28,16 +33,17 @@ class Autocomplete extends Component {
       // To render Country details
       display: false,
       // Country detail,
-      filteredSearch: []
+      filteredSearch: [],
     };
   }
 
   onChange = e => {
-    const { suggestions } = this.props;
+    const { countryArray } = this.props;
+
     const userInput = e.currentTarget.value;
 
     // Filter our suggestions that don't contain the user's input
-    const filteredSuggestions = suggestions.filter(
+    const filteredSuggestions = countryArray.filter(
       suggestion =>
         suggestion.toLowerCase().indexOf(userInput.toLowerCase()) > -1
     );
@@ -58,11 +64,10 @@ class Autocomplete extends Component {
       userInput: e.currentTarget.innerText,
       display: true
     }, () => {
-      const { country } = this.props;
+      const { countries } = this.props;
       const { userInput } = this.state;
-      console.log(userInput);
 
-      const CountryDetail = country.filter(
+      const CountryDetail = countries.filter(
         country =>
           country.name.toLowerCase() === (userInput.toLowerCase())
       );
@@ -83,11 +88,10 @@ class Autocomplete extends Component {
         userInput: filteredSuggestions[activeSuggestion],
         display: true
       }, () => {
-        const { country } = this.props;
+        const { countries } = this.props;
         const { userInput } = this.state;
-        console.log(userInput);
 
-        const CountryDetail = country.filter(
+        const CountryDetail = countries.filter(
           country =>
             country.name.toLowerCase() === (userInput.toLowerCase())
         );
@@ -158,9 +162,10 @@ class Autocomplete extends Component {
         );
       }
     }
-
+    //Local State
     const { filteredSearch } = this.state;
-
+    //From Redux
+    const { region, updateCountryStart } = this.props;
     return (
       <Fragment>
         <input
@@ -168,16 +173,48 @@ class Autocomplete extends Component {
           onChange={onChange}
           onKeyDown={onKeyDown}
           value={userInput}
+          placeholder="Search Country"
         />
-        {suggestionsListComponent}
+        <select
+          value={this.state.selectedRegion}
+          onChange={
+            e => {
+              updateCountryStart(e.target.value)
+              this.setState({
+                selectedTeam: e.target.value,
+              })
+            }
+          }
+        >
+          <option selected value="none">Show All Regions</option>
+          {
+            region
+              ? region.map(Region => (
+                Region ? <option value={Region}>{Region}</option> : null))
+              : null
+          }
+        </select>
+        <div className="list-component">
+          {suggestionsListComponent}
+        </div>
         {
           display
             ? <CountryList country={filteredSearch} />
             : null
         }
-      </Fragment>
+      </Fragment >
     );
   }
 }
 
-export default Autocomplete;
+const mapStateToProps = createStructuredSelector({
+  countries: selectCountry,
+  countryArray: selectCountryArray,
+  region: selectRegion
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  updateCountryStart: (region) => dispatch(updateCountryStart(region))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Autocomplete);

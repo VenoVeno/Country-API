@@ -3,11 +3,14 @@ import React from 'react';
 const Array = ({ array }) => {
     return (
         <div key="">
-            {
-                array.map(obj => (
-                    <h1> {obj.name}</h1>
-                ))
-            }
+            <span>
+                {
+                    array.map(obj => (
+                        <span>{obj.name}<br></br></span>
+                    ))
+                }
+            </span>
+
         </div >
     )
 }
