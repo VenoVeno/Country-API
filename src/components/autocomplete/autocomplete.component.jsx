@@ -168,32 +168,34 @@ class Autocomplete extends Component {
     const { region, updateCountryStart } = this.props;
     return (
       <Fragment>
-        <input
-          type="text"
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          value={userInput}
-          placeholder="Search Country"
-        />
-        <select
-          value={this.state.selectedRegion}
-          onChange={
-            e => {
-              updateCountryStart(e.target.value)
-              this.setState({
-                selectedTeam: e.target.value,
-              })
+        <div className="input-search">
+          <input
+            type="text"
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            value={userInput}
+            placeholder="Search Country"
+          />
+          <select
+            value={this.state.selectedRegion}
+            onChange={
+              e => {
+                updateCountryStart(e.target.value)
+                this.setState({
+                  selectedTeam: e.target.value,
+                })
+              }
             }
-          }
-        >
-          <option selected value="none">Show All Regions</option>
-          {
-            region
-              ? region.map(Region => (
-                Region ? <option value={Region}>{Region}</option> : null))
-              : null
-          }
-        </select>
+          >
+            <option selected value="none">Show All Regions</option>
+            {
+              region
+                ? region.map(Region => (
+                  Region ? <option value={Region}>{Region}</option> : null))
+                : null
+            }
+          </select>
+        </div>
         <div className="list-component">
           {suggestionsListComponent}
         </div>

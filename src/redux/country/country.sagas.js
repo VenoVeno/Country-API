@@ -1,7 +1,7 @@
 import { takeLatest, call, all, put } from 'redux-saga/effects'
 import { CountryActionTypes } from './country.types';
 
-import { fetchCountrySuccess, fetchCountryFailure, updateCountryNameArray, fetchRegionSuccess, fetchRegionFailure, updateCountrySuccess, updateCountryFailure } from './country.actions';
+import { fetchCountrySuccess, fetchCountryFailure, updateCountryNameArray, fetchRegionSuccess, fetchRegionFailure, updateCountrySuccess, updateCountryFailure, fetchCountryStart } from './country.actions';
 
 import { select } from 'redux-saga/effects';
 import { selectCountry } from './country.selectors'
@@ -19,12 +19,15 @@ export function* fetchCountriesAsync() {
 
 //Fetch After Update
 export function* fetchCountriesAfterRegionUpdate({ payload }) {
-    console.log("Hey", payload)
+    if (payload === "none") {
+        yield put(fetchCountryStart());
+        return;
+    }
+    console.log(payload)
     try {
         const data = yield fetch(`https://restcountries.eu/rest/v2/region/${payload}`);
         const dataJSON = yield data.json();
         yield put(updateCountrySuccess(dataJSON));
-        console.log(dataJSON);
     } catch (error) {
         yield put(updateCountryFailure(error));
     }
