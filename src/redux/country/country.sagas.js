@@ -23,7 +23,6 @@ export function* fetchCountriesAfterRegionUpdate({ payload }) {
         yield put(fetchCountryStart());
         return;
     }
-    console.log(payload)
     try {
         const data = yield fetch(`https://restcountries.eu/rest/v2/region/${payload}`);
         const dataJSON = yield data.json();
