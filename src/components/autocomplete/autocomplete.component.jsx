@@ -1,46 +1,40 @@
-import React, { Component, Fragment } from "react";
-import PropTypes from "prop-types";
+import React, { Fragment } from "react";
+// import PropTypes from "prop-types";
 import { createStructuredSelector } from 'reselect';
 
-import { CountryList } from '../country-list/country-list.component';
+// import { CountryList } from '../country-list/country-list.component';
+import SearchBox from '../search-box/search-box.component';
+import DropDown from '../dropdown/dropdown.component';
+import SuggestionList from '../suggestion-list/suggestion-list.component';
+
 import './autocomplete.styles.scss';
 
 import { connect } from 'react-redux';
-import { updateCountryStart } from '../../redux/country/country.actions';
-import { selectCountry, selectCountryArray, selectRegion } from '../../redux/country/country.selectors';
+import { updateCountryStart, updateFilteredCountry } from '../../redux/country/country.actions';
+import { selectCountryArray } from '../../redux/country/country.selectors';
 
-class Autocomplete extends Component {
-  static propTypes = {
-    suggestions: PropTypes.instanceOf(Array)
-  };
+class Autocomplete extends React.Component {
+  // static propTypes = {
+  //   suggestions: PropTypes.instanceOf(Array)
+  // };
 
-  static defaultProps = {
-    suggestions: []
-  };
+  // static defaultProps = {
+  //   suggestions: []
+  // };
 
   constructor(props) {
     super(props);
-
     this.state = {
-      // The active selection's index
       activeSuggestion: 0,
-      // The suggestions that match the user's input
       filteredSuggestions: [],
-      // Whether or not the suggestion list is shown
       showSuggestions: false,
-      // What the user has entered
-      userInput: "",
-      // To render Country details
-      display: false,
-      // Country detail,
-      filteredSearch: [],
+      userInput: ""
     };
   }
 
-  onChange = e => {
-    const { countryArray } = this.props;
-
-    const userInput = e.currentTarget.value;
+  onChange = (e) => {
+    const { countryArray } = this.props; //From Redux State
+    const userInput = e.currentTarget.value; //From User Input
 
     // Filter our suggestions that don't contain the user's input
     const filteredSuggestions = countryArray.filter(
@@ -61,19 +55,23 @@ class Autocomplete extends Component {
       activeSuggestion: 0,
       filteredSuggestions: [],
       showSuggestions: false,
-      userInput: e.currentTarget.innerText,
-      display: true
+      userInput: e.currentTarget.innerText
     }, () => {
-      const { countries } = this.props;
-      const { userInput } = this.state;
 
-      const CountryDetail = countries.filter(
-        country =>
-          country.name.toLowerCase() === (userInput.toLowerCase())
-      );
-      this.setState({
-        filteredSearch: CountryDetail
-      });
+      // this.setState({
+      //   filteredSearch: CountryDetail
+      // });
+
+      // const { countries } = this.props; //From Redux State
+
+      // const CountryDetail = countries.filter(
+      //   country =>
+      //     country.name.toLowerCase() === (userInput.toLowerCase())
+      // );
+
+      const { userInput } = this.state; //From User Input
+      const { updateFilteredCountry } = this.props;
+      updateFilteredCountry(userInput);
     });
   };
 
@@ -86,137 +84,79 @@ class Autocomplete extends Component {
         activeSuggestion: 0,
         showSuggestions: false,
         userInput: filteredSuggestions[activeSuggestion],
-        display: true
       }, () => {
-        const { countries } = this.props;
         const { userInput } = this.state;
-
-        const CountryDetail = countries.filter(
-          country =>
-            country.name.toLowerCase() === (userInput.toLowerCase())
-        );
-        this.setState({
-          filteredSearch: CountryDetail
-        });
+        const { updateFilteredCountry } = this.props;
+        updateFilteredCountry(userInput);
       });
     }
     // User pressed the up arrow
     else if (e.keyCode === 38) {
-      if (activeSuggestion === 0) {
-        return;
-      }
-
+      if (activeSuggestion === 0) return;
       this.setState({ activeSuggestion: activeSuggestion - 1 });
     }
     // User pressed the down arrow
     else if (e.keyCode === 40) {
-      if (activeSuggestion - 1 === filteredSuggestions.length) {
-        return;
-      }
-
+      if (activeSuggestion - 1 === filteredSuggestions.length) return;
       this.setState({ activeSuggestion: activeSuggestion + 1 });
     }
   };
 
   render() {
     const {
-      onChange,
-      onClick,
-      onKeyDown,
+      onChange, onClick, onKeyDown,
       state: {
-        activeSuggestion,
-        filteredSuggestions,
-        showSuggestions,
-        userInput,
-        display
+        activeSuggestion, filteredSuggestions, showSuggestions, userInput
       }
     } = this;
 
-    let suggestionsListComponent;
-
-    if (showSuggestions && userInput) {
-      if (filteredSuggestions.length) {
-        suggestionsListComponent = (
-          <ul class="suggestions">
-            {filteredSuggestions.map((suggestion, index) => {
-              let className;
-
-              // Flag the active suggestion with a class
-              if (index === activeSuggestion) {
-                className = "suggestion-active";
-              }
-
-              return (
-                <li className={className} key={suggestion} onClick={onClick}>
-                  {suggestion}
-                </li>
-              );
-            })}
-          </ul>
-        );
-      } else {
-        suggestionsListComponent = (
-          <div class="no-suggestions">
-            <em>No suggestions, you're on your own!</em>
-          </div>
-        );
-      }
-    }
-    //Local State
-    const { filteredSearch } = this.state;
-    //From Redux
-    const { region, updateCountryStart } = this.props;
+    const { updateCountryStart } = this.props;
     return (
       <Fragment>
         <div className="input-search">
-          <input
-            type="text"
+          <SearchBox
+            type="search"
+            name="search"
             onChange={onChange}
             onKeyDown={onKeyDown}
             value={userInput}
             placeholder="Search Country"
           />
-          <select
-            value={this.state.selectedRegion}
-            onChange={
-              e => {
-                updateCountryStart(e.target.value)
-                this.setState({
-                  selectedTeam: e.target.value,
-                })
-              }
-            }
-          >
-            <option selected value="none">Show All Regions</option>
-            {
-              region
-                ? region.map(Region => (
-                  Region ? <option value={Region}>{Region}</option> : null))
-                : null
-            }
-          </select>
+          <DropDown
+            name="region-select" onChange={e => updateCountryStart(e.target.value)}
+          />
         </div>
         <div className="list-component">
-          {suggestionsListComponent}
+          <SuggestionList
+            showSuggestion={showSuggestions}
+            userInput={userInput}
+            filteredSuggestion={filteredSuggestions}
+            activeSuggestion={activeSuggestion}
+            onClick={onClick}
+          />
         </div>
-        {
+        {/* <div className="list-component">
+              {suggestionsListComponent}
+            </div> */}
+        {/* {
           display
             ? <CountryList country={filteredSearch} />
             : null
-        }
+        } */}
       </Fragment >
     );
   }
 }
 
 const mapStateToProps = createStructuredSelector({
-  countries: selectCountry,
-  countryArray: selectCountryArray,
-  region: selectRegion
+  // countries: selectCountry,
+  countryArray: selectCountryArray
+  // filteredSearch: selectFilteredSearch
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  updateCountryStart: (region) => dispatch(updateCountryStart(region))
+  updateCountryStart: (region) => dispatch(updateCountryStart(region)),
+  updateFilteredCountry: (userInput) => dispatch(updateFilteredCountry(userInput))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Autocomplete);

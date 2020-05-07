@@ -3,9 +3,6 @@ import { CountryActionTypes } from './country.types';
 
 import { fetchCountrySuccess, fetchCountryFailure, updateCountryNameArray, fetchRegionSuccess, fetchRegionFailure, updateCountrySuccess, updateCountryFailure, fetchCountryStart } from './country.actions';
 
-import { select } from 'redux-saga/effects';
-import { selectCountry } from './country.selectors'
-
 // Fetch Country API
 export function* fetchCountriesAsync() {
     try {
@@ -17,7 +14,23 @@ export function* fetchCountriesAsync() {
     }
 }
 
-//Fetch After Update
+//Fetch Country Region API
+export function* fetchCountriesRegionAsync() {
+    try {
+        const data = yield fetch("https://restcountries.eu/rest/v2/all?fields=region");
+        const regionJSONData = yield data.json();
+        yield put(fetchRegionSuccess(regionJSONData));
+    } catch (error) {
+        yield put(fetchRegionFailure(error));
+    }
+}
+
+export function* onFetchStart() {
+    yield takeLatest(CountryActionTypes.FETCH_COUNTRY_START, fetchCountriesAsync)
+    yield takeLatest(CountryActionTypes.FETCH_COUNTRY_START, fetchCountriesRegionAsync)
+}
+
+//Fetch After Updation on Dropdown
 export function* fetchCountriesAfterRegionUpdate({ payload }) {
     if (payload === "none") {
         yield put(fetchCountryStart());
@@ -32,51 +45,27 @@ export function* fetchCountriesAfterRegionUpdate({ payload }) {
     }
 }
 
-export function* onFetchStart() {
-    yield takeLatest(CountryActionTypes.FETCH_COUNTRY_START, fetchCountriesAsync)
-    yield takeLatest(CountryActionTypes.FETCH_COUNTRY_START, fetchCountriesRegionAsync)
-}
-
 export function* onUpdate() {
     yield takeLatest(
         CountryActionTypes.UPDATE_COUNTRY_START, fetchCountriesAfterRegionUpdate)
 }
 
-//Fetch Country Region API
-export function* fetchCountriesRegionAsync() {
-    try {
-        const data = yield fetch("https://restcountries.eu/rest/v2/all?fields=region");
-        const dataJSON = yield data.json();
-
-        const filteredRegion = yield Array.from(new Set(dataJSON.map(newObj => newObj.region)))
-            .map(region => {
-                return region
-            })
-        filteredRegion.reverse();
-        yield put(fetchRegionSuccess(filteredRegion.filter(Boolean)));
-    } catch (error) {
-        yield put(fetchRegionFailure(error));
-    }
-}
-
 //Update Country Name Array for suggestion
 export function* updateCountryName() {
-    const countries = yield select(selectCountry);
-    const countryArray = countries.map(newObj => {
-        return newObj.name
-    });
-    yield put(updateCountryNameArray(countryArray));
+    yield put(updateCountryNameArray());
 }
 
-export function* onFetchCountrySuccess() {
-    yield takeLatest(CountryActionTypes.FETCH_COUNTRY_SUCCESS, updateCountryName)
-    yield takeLatest(CountryActionTypes.UPDATE_COUNTRY_SUCCESS, updateCountryName)
+export function* onCountryModifySuccess() {
+    yield takeLatest([
+        CountryActionTypes.FETCH_COUNTRY_SUCCESS,
+        CountryActionTypes.UPDATE_COUNTRY_SUCCESS],
+        updateCountryName)
 }
 
 export default function* countrySagas() {
     yield all([
         call(onFetchStart),
-        call(onFetchCountrySuccess),
-        call(onUpdate)
+        call(onUpdate),
+        call(onCountryModifySuccess)
     ])
 }

@@ -32,18 +32,23 @@ export const fetchCountryFailure = (errorMessage) => ({
 });
 
 // ARRAY CREATION FOR COUNTRY
-export const updateCountryNameArray = (countryNameArray) => ({
-    type: CountryActionTypes.UPDATE_COUNTRY_ARRAY,
-    payload: countryNameArray
+export const updateCountryNameArray = () => ({
+    type: CountryActionTypes.UPDATE_COUNTRY_ARRAY
 });
 
 // FETCH REGIONS
-export const fetchRegionSuccess = (region) => ({
+export const fetchRegionSuccess = (regionJSONData) => ({
     type: CountryActionTypes.FETCH_REGION_SUCCESS,
-    payload: region
+    payload: regionJSONData
 });
 
 export const fetchRegionFailure = (errorMessage) => ({
     type: CountryActionTypes.FETCH_REGION_FAILURE,
     payload: errorMessage
+});
+
+//Filtered Search
+export const updateFilteredCountry = (userInput) => ({
+    type: CountryActionTypes.UPDATE_SEARCH_FILTER_COUNTRY,
+    payload: userInput
 });

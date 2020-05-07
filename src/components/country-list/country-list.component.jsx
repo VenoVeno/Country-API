@@ -1,20 +1,19 @@
 import React from 'react';
 
-import { Country } from '../country/country.component';
+import Country from '../country/country.component';
 
 import './country-list.styles.scss';
 
-export const CountryList = (props) => {
+export const CountryList = ({ country }) => {
     return (
         <div className="country-list">
             {
-                props.country.map(
-                    country =>
-                        (
-                            <Country key={country.id} country={country} />
-                        )
-                )
+                country.map((country, index) => (
+                    <Country key={index} country={country} />
+                ))
             }
         </div>
     )
 }
+
+export default CountryList;

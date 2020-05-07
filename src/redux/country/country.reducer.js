@@ -1,11 +1,14 @@
 import { CountryActionTypes } from './country.types';
+import { updatedFetchedRegion, updateCountryArray, updateSearchFilterArray } from './country.utils';
 
 const INITIAL_STATE = {
     countries: [],
     region: [],
+    countryArray: [],
+    filteredCountry: [],
     isFetching: false,
     fetchErrorMessage: undefined,
-    countryArray: []
+    fieldsToDisplay: ["region", "capital", "population", "languages", "currencies", "timezones"]
 }
 
 const countryReducer = (state = INITIAL_STATE, action) => {
@@ -27,7 +30,7 @@ const countryReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 isFetching: false,
-                region: action.payload,
+                region: updatedFetchedRegion(action.payload),
                 fetchErrorMessage: null
             }
         case CountryActionTypes.FETCH_COUNTRY_FAILURE:
@@ -41,7 +44,12 @@ const countryReducer = (state = INITIAL_STATE, action) => {
         case CountryActionTypes.UPDATE_COUNTRY_ARRAY:
             return {
                 ...state,
-                countryArray: action.payload
+                countryArray: updateCountryArray(state.countries)
+            }
+        case CountryActionTypes.UPDATE_SEARCH_FILTER_COUNTRY:
+            return {
+                ...state,
+                filteredCountry: updateSearchFilterArray(action.payload, state.countries)
             }
         default:
             return state;
